@@ -1,28 +1,35 @@
-# VECTOR//NOVA — Web 
+# VECTOR//NOVA — Web
 
 ## Vision
 
-A modern, visually spectacular browser-based arcade survival shooter, built from the foundations of the original Java/LWJGL prototype. The ambition is to deliver the immediacy, intensity and visual richness of a premium twin-stick arcade game while retaining the distinctive technical identity of the original project.
+A visually spectacular browser-based arcade survival shooter and fidelity-first remaster of the original Java/LWJGL Geometry Wars prototype. Preserve the original game's recognizable gameplay, movement, visual identity, physical simulation and arcade rhythm, while substantially elevating rendering, effects, presentation and polish.
 
-This is a creative remaster, not a line-by-line port. The original implementation provides a behavioral and mathematical reference; the remake is free to reinterpret its controls, visuals, balance and systems.
+This is not a line-by-line port, nor a free reinterpretation. The Java prototype is the primary reference for existing behavior and art direction; the supplied Geometry Wars screenshots are the visual benchmark for intensity, composition and effects. Improvements should make the original experience richer rather than replace its identity. The Java prototype establishes the baseline identity, not the upper limit of the game. A single exceptional survival arena is more valuable than many unfinished modes.
 
-The experience should be easy to understand within seconds and rewarding to master over repeated runs. A single exceptional arena, with increasingly intense enemy formations, satisfying weapons and dramatic physical reactions, is more valuable than a broad collection of unfinished modes.
+## Evolution and feature preservation
+
+VECTOR//NOVA evolves from the existing web remaster. Each iteration should build upon its successful gameplay additions, visual effects, presentation, systems and technical improvements. Fidelity means restoring the original identity where it has drifted, not rolling back the remaster to the legacy feature set.
+
+Preserve and enhance functioning mechanics, weapons, abilities, progression, enemy archetypes, audio, interface features and supporting infrastructure already introduced in the web implementation. A feature's absence from Java is not a reason to remove it. When an addition conflicts with the established art direction, adapt its presentation before considering changes to its functionality. Explicitly requested behavior corrections take precedence over conflicting behavior, without discarding unrelated improvements.
+
+New ideas are encouraged when they enrich the core experience. Creative freedom remains substantial within the established gameplay and artistic identity. Feature removal or substantial redesign that reduces existing capabilities requires explicit owner approval; necessary internal replacements are welcome when functionality is preserved.
 
 ## Creative pillars
 
-- **Precision:** responsive movement, independent aiming, clear hitboxes and immediate combat feedback.
-- **Spectacle:** energetic weapons, luminous geometric enemies, layered explosions, dynamic trails and expressive screen effects.
-- **A living arena:** a physically reactive lattice that bends, ripples and responds to the events occurring within it. Black holes and major explosions are central visual signatures.
-- **Arcade mastery:** escalating pressure, varied enemy interactions, score chasing and rapid replay.
+- **Fidelity:** recognizable original ship, controls, geometric enemies, projectiles, cosmic setting, typography and reactive blue grid.
+- **Precision:** responsive rotation and thrust, independent mouse aiming, clear hitboxes and immediate combat feedback.
+- **Spectacle:** white-hot emissive cores, strong bloom, luminous trails, dense multicolored particle explosions and dramatic large-scale effects.
+- **A living arena:** a physically reactive lattice that bends, oscillates and responds continuously to bullets and black holes, as well as explosions and major shockwaves.
+- **Arcade mastery:** escalating pressure, varied enemy interactions, scoring and rapid replay.
 
 ## Visual identity
 
-The inspiration is the neon intensity of Geometry Wars: Retro Evolved 2 and Geometry Wars 3: Dimensions, interpreted through a contemporary geometric sci-fi aesthetic. Deep, restrained backgrounds contrast with saturated emissive colors, crisp outlines and white-hot energy cores. Subtle depth, distortion and procedural animation can enrich the presentation without compromising the top-down gameplay plane.
+The arena is predominantly cosmic black, deep electric blue and neon cyan, with white-hot highlights. Gold/orange projectiles and varied highly saturated enemy colors create contrast. Green may identify particular enemies but must not dominate the arena, HUD or menus. Bright geometric outlines should remain readable against the dark environment even with deliberately excessive combat luminosity.
 
-The original sprites are a useful starting point, not an artistic constraint. Procedural geometry, shader-driven surfaces and original visual effects are encouraged. Menus and HUD should remain clean and cohesive, giving the arena room to breathe.
+The original sprites, cosmic background and ExoSpace typography are the preferred visual baseline. Enhance or faithfully recreate them where necessary rather than replacing them with unrelated designs. Geometry Wars is the benchmark for the density and energy of particles, grid distortions, black holes, snake silhouettes and large detonations. Menus should feel like a polished arcade game, not a generic web dashboard.
 
 ## Creative and technical authority
 
-Astra High acts as senior lead developer and retains authority over architecture, implementation, artistic interpretation and gameplay refinements. These documents establish a shared direction, not an exhaustive specification. Proposed features, numbers and implementation techniques are intentionally flexible. Sound engineering judgment and playtest results take precedence over preserving incidental legacy behavior.
+Astra acts as senior lead developer and retains authority over architecture, simulation techniques, shaders, rendering pipelines, optimization, implementation and tuning. The established gameplay and art direction are constraints, not optional suggestions. Changes to identity-defining behaviors or visuals beyond the established direction require explicit owner approval; technical improvements and correction of incidental legacy bugs remain encouraged. Preserve the successful capabilities of the current web build while correcting deviations from the intended identity.
 
-The intended outcome is a polished, standalone browser game suitable for public play and a technical portfolio showcase. The final public title is not yet fixed.
+The intended outcome is a polished standalone browser game and portfolio showcase titled VECTOR//NOVA.

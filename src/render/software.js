@@ -124,7 +124,7 @@ export class CanvasDisplay {
     for(const s of w.shards)fluxGlyph(ink,s,t);
     if(this.sheet.naturalWidth)sprites(w,(tile,x,y,a,sw,sh)=>{
       c.save();c.globalAlpha=1;c.translate(x,y);c.rotate(a);c.scale(1,-1);
-      c.shadowBlur=glow?5:0;c.shadowColor=tile===5?'#ff9225':'#6cafff';
+      c.shadowBlur=glow?3:0;c.shadowColor=tile===5?'#ff9225':'#6cafff';
       c.drawImage(this.sheet,tile*64,0,64,64,-sw/2,-sh/2,sw,sh);c.restore();
     });
     if(!w.over)craft(ink,w.player,t);
@@ -132,8 +132,8 @@ export class CanvasDisplay {
     if(glow){
       const glowCtx=this.glowPlate.getContext('2d');
       glowCtx.drawImage(this.canvas,0,0,this.glowPlate.width,this.glowPlate.height);
-      c.save();c.globalCompositeOperation='lighter';c.globalAlpha=.66;
-      c.filter='blur(3px)';c.drawImage(this.glowPlate,0,0,this.w,this.h);c.restore();
+      c.save();c.globalCompositeOperation='lighter';c.globalAlpha=.45;
+      c.filter='blur(2px)';c.drawImage(this.glowPlate,0,0,this.w,this.h);c.restore();
     }
   }
   dispose(){this.observer.disconnect();}

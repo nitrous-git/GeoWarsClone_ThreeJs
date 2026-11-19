@@ -1,1 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#0c1214"/><path fill="#d6fa68" d="M3 14h7l5 13 9-13h7L15 38zm23 11 6-10 3 9 5-10h5L34 38z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="165 95 425 545" role="img" aria-labelledby="title">
+  <title id="title">Nitrous monogram</title>
+  <defs>
+    <linearGradient id="nitrous-gradient" x1="0" y1="0" x2="0.14" y2="1">
+      <stop offset="0" stop-color="#fff" />
+      <stop offset="0.48" stop-color="#f1eaff" />
+      <stop offset="0.72" stop-color="#bda0ff" />
+      <stop offset="1" stop-color="#7240ee" />
+    </linearGradient>
+  </defs>
+  <path fill="url(#nitrous-gradient)" d="M211 141 L450 347 L450 413 L266 252 L266 522 L211 574 Z M300 330 L484 490 L484 189 L540 135 L540 592 L300 398 Z"/>
+</svg>

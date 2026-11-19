@@ -130,7 +130,7 @@ export class Display {
       b.source.value=this.wide.texture;b.stride.value.set(0,1.5/this.wide.height);this.pass(this.blur,this.haze);
     }
     this.final.uniforms.wideTex.value=this.haze.texture;this.final.uniforms.sceneTex.value=this.target.texture;this.final.uniforms.bloomTex.value=this.soft.texture;
-    this.final.uniforms.bloom.value=this.settings.bloom?(this.settings.reduced?.46:1.46):0;this.pass(this.final,null);
+    this.final.uniforms.bloom.value=this.settings.bloom?(this.settings.reduced?.35:1.10):0;this.pass(this.final,null);
   }
   dispose(){
     this.observer.disconnect();this.grid.dispose();this.sprites.dispose();this.light.dispose();this.ink.dispose();this.fx.dispose();this.rim.dispose();

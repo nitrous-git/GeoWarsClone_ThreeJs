@@ -3,15 +3,14 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#090e11">
-  <meta name="description" content="VECTOR//NOVA Genesis. A twin-stick arcade shooter on a living gravitational lattice.">
-  <title>VECTOR//NOVA — Genesis</title>
+  <meta name="description" content="Geometry Wars Clone Genesis. A twin-stick arcade shooter on a living gravitational lattice.">
+  <title>GeoWars Clone — Genesis</title>
   <link rel="icon" href="./assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
   <script type="importmap">{"imports":{"three":"./src/platform/three.js"}}</script>
 </head>
 <body data-view="menu">
   <svg class="symbols" aria-hidden="true"><defs>
-    <symbol id="mark" viewBox="0 0 43 26"><path fill="currentColor" d="M0 2h8l5.1 12.3L21 2h7L12.4 25zM24.7 11.5 30.4 3l3.7 9.7L40 2h3L32.9 25z"/></symbol>
     <symbol id="sound" viewBox="0 0 24 24"><path d="m3 9 4 0 5-4v14l-5-4H3zM16 8c3 2 3 6 0 8m3-11c5 4 5 10 0 14"/></symbol>
     <symbol id="expand" viewBox="0 0 24 24"><path d="M3 9V3h6m6 0h6v6m0 6v6h-6m-6 0H3v-6"/></symbol>
     <symbol id="book" viewBox="0 0 24 24"><path d="M4 4h12l4 4v12H4zM15 4v5h5M8 12h7m-7 4h6"/></symbol>
@@ -24,7 +23,7 @@
   </defs></svg>
   <div id="console">
     <header class="topbar">
-      <div class="studio"><svg class="brand-mark"><use href="#mark"/></svg><span>NITROUS <b>STUDIO</b></span></div>
+      <div class="studio"><img class="brand-mark" src="./assets/mark.svg" alt=""><span>NITROUS <b>STUDIO</b></span></div>
       <span class="head-rule"></span>
       <span class="header-mode" id="header-mode">Arcade survival</span>
       <div class="header-actions">
@@ -34,11 +33,11 @@
       </div>
     </header>
     <main id="stage">
-      <canvas id="screen" aria-label="VECTOR//NOVA arcade arena"></canvas>
+      <canvas id="screen" aria-label="Geometry Wars Clone arcade arena"></canvas>
       <div class="menu-overlay" id="home">
         <div class="menu-main">
           <p class="eyebrow"><i></i>Geometric survival<i></i></p>
-          <h1 aria-label="VECTOR//NOVA"><span>VECTOR</span><i>//</i><span>NOVA</span></h1>
+          <h1 aria-label="Geometry Wars Clone"><span>Geo</span><span>Wars</span><i>Clone</i></h1>
           <nav class="arcade-nav" aria-label="Main menu">
             <button class="launch" id="launch" disabled><span id="launch-label">Initializing</span></button>
             <button id="scores-btn">High scores</button>

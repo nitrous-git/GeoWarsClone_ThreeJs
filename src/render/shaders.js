@@ -129,7 +129,7 @@ void main(){vec2 p=(vUv-.5)*7.4;float r=length(p);
 `;
 export const blurFragment = `
 varying vec2 vUv;uniform sampler2D source;uniform vec2 stride;uniform float extract;
-vec3 tap(vec2 uv){vec3 c=texture2D(source,uv).rgb;return extract>.5?max(c-vec3(.24),vec3(0.)):c;}
+vec3 tap(vec2 uv){vec3 c=texture2D(source,uv).rgb;return extract>.5?max(c-vec3(.34),vec3(0.)):c;}
 void main(){vec3 c=tap(vUv)*.227027;
  c+=(tap(vUv+stride*1.384615)+tap(vUv-stride*1.384615))*.316216;
  c+=(tap(vUv+stride*3.230769)+tap(vUv-stride*3.230769))*.070270;
@@ -144,6 +144,6 @@ void main(){vec2 uv=vUv;
   float d=length(delta)/max(.0001,lenses[i].z);
   uv-=vec2(delta.x/aspect,delta.y)*exp(-d*d*1.45)*.21*lenses[i].w;
  }
- vec3 c=texture2D(sceneTex,uv).rgb+(texture2D(bloomTex,uv).rgb+texture2D(wideTex,uv).rgb*.92)*bloom;
+ vec3 c=texture2D(sceneTex,uv).rgb+(texture2D(bloomTex,uv).rgb+texture2D(wideTex,uv).rgb*.60)*bloom;
  gl_FragColor=vec4(c/(1.+.17*c),1.);}
 `;

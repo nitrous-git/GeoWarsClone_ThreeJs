@@ -2,33 +2,42 @@
 
 ## Core experience
 
-The central loop is immediate: enter the arena, evade enemies, aim independently, destroy formations, improve firepower, accumulate score and survive increasingly dangerous encounters. Death concludes the run with a satisfying visual payoff, a clear results screen and immediate replay access.
+Enter the arena, maneuver a spacecraft, aim independently, destroy formations, improve firepower, accumulate score and survive increasingly dangerous encounters. Death concludes the run with a satisfying effect, clear results and immediate replay access.
 
-Modern twin-stick-style controls are the preferred default: keyboard movement and mouse aiming with held-button firing, with gamepad support where practical. The original rotation-and-thrust movement remains a possible alternative, not a requirement. The arcade experience should favor readable threats, responsive handling and player skill over complex progression menus.
+The default input model is the original rotation-and-thrust style with updated keyboard bindings: A/D rotate, W applies forward thrust, release W progressively decelerates, and the mouse independently directs held-left-button firing. Preserve the original response and movement feel with frame-rate-independent tuning. Mouse aim must not rotate the ship. Additional input schemes are secondary and must not replace the default.
 
 ## Original gameplay foundation
 
 The Java prototype contains four principal enemies, a score-based weapon upgrade, overlapping waves, death particles, thruster effects and a gravity-driven black hole system.
 
-| Archetype | Original behavior | Creative direction |
+| Archetype | Original behavior | Direction |
 |---|---|---|
-| Hunter (A) | Blue enemy pursuing the player; 50 points | Coordinated pursuit and swarm pressure |
-| Spinner (B) | Rotating, wall-bouncing purple/red variants; 25 points | Unpredictable trajectories and arena occupation |
-| Singularity (C) | Black hole with orbiting particles and grid attraction; intended 100-point reward | Gravitational hazard, evolving visual intensity and chain reactions |
-| Stalker (D) | Green pursuer, often spawned in sequential groups; 50 points | Agile movement and projectile evasion; evasion was not implemented in Java |
+| Hunter (A) | Blue enemy pursuing the player; 50 points | Preserve recognizable pursuit and appearance |
+| Spinner (B) | Rotating, wall-bouncing purple/red variants; 25 points | Preserve recognizable trajectories and variants |
+| Singularity (C) | Black hole with orbiting particles and grid attraction; intended 100-point reward | Persistent gravitational distortion and rich orbital effects |
+| Stalker (D) | Green pursuer, often spawned in sequential groups; 50 points | Preserve recognizable behavior; evasion was not implemented in Java |
+| Snake | Geometry Wars-inspired addition | Articulated luminous orange chain, distinct head, flowing motion and readable collision behavior |
 
-These are a recognizable core roster, not a limit. Distinct visual shapes, motion signatures, spawn warnings and destruction effects should communicate each enemy's behavior. Additional archetypes such as dash attackers, splitters, shielded enemies or repulsors are potential extensions when they add meaningful tactical variety.
+Preserve the single-shot and three-projectile spread upgrade (above 4,000 points) as the reference baseline. Retain the existing web remaster’s additional weapon tiers, abilities, progression, scoring systems and enemy archetypes wherever present; the Java baseline must not replace a richer working system. Integrate restored behaviors and new content into the current gameplay loop. Balance and exact tuning remain open to iteration. Nova Pulse is a major emergency weapon, distinguished from normal combat by arena-scale coverage and spectacular effects.
 
-The original single-shot and three-projectile spread upgrade (above 4,000 points) provides a baseline for weapon evolution. Additional weapon tiers, score multipliers, energy fragments, emergency bombs or limited lives are optional refinements to the survival loop. Balance and exact thresholds remain open to iteration.
+## Remaster feature continuity
+
+The original roster and weapon progression above are foundations, not an exhaustive feature list. Build on all functioning gameplay additions in the current web version, including any additional enemies, weapons, abilities, pickups, scoring or progression mechanics. Their exact inventory is established by inspecting the current implementation rather than assuming which features exist.
+
+Preserve useful menu functionality, high-score tracking, settings, audio, input options and other player-facing improvements. Revise their visual presentation and correct default ship controls to match the established direction without discarding unrelated functionality. Additional control schemes may remain optional. Preserve the accessibility and quality options already available.
+
+Prefer extending, integrating and polishing existing systems rather than creating redundant replacements. Any intentional reduction in player-facing capabilities requires owner approval. The goal is a richer experience with a more faithful identity, not a narrower reproduction of the Java version.
 
 ## Intensity and encounter design
 
-Enemy formations and spawn timing should create an evolving rhythm: pressure, escalation, brief recovery and renewed intensity. Mixed enemy encounters, converging formations and black holes can create emergent situations. Fair spawn telegraphing and sufficient reaction time matter more than arbitrary difficulty increases. A wave director can support these patterns without imposing rigid breaks in the action.
+Preserve the arcade rhythm of escalating, overlapping waves. Mixed enemy encounters, sequential formations and black holes should create emergent situations. Fair spawn telegraphing and readable silhouettes matter more than arbitrary difficulty increases. Additional modes and unrelated content are secondary to the quality and fidelity of the core survival experience.
 
 ## Presentation and feedback
 
-The player, projectiles and enemies should read instantly against a darker, physically responsive arena. Layered emissive geometry, controlled bloom, additive particles and shockwaves can produce a rich sense of energy. Large detonations should be distinguished from routine kills through scale, timing, physical grid response and sound. Black holes should feel spatially disruptive, with coherent gravitational effects and animated cores rather than generic particle clouds.
+The arena features a dark cosmic background, dense electric-blue elastic lattice and bright neon boundary. Preserve the original spacecraft and projectile silhouettes. Projectiles are prominent orange/gold double bolts with brilliant cores and continuous deformation along their path. Thrusters emit directional trails. Enemy deaths generate dense, velocity-stretched multicolored particles, flashes, local grid impulses and residual trails.
 
-A minimal HUD, cohesive start/pause/results screens, personal best tracking and responsive fullscreen presentation support the arcade flow. Sound design should provide the same intentional differentiation as the visuals: weapon cadence, impacts, enemy warnings, powerful detonations and subtle environmental ambience. Reduced-flashing and screen-shake controls are desirable for comfort and accessibility.
+Black holes continuously attract and deform the grid while luminous particles orbit and spiral around their cores. Their destruction produces a dramatic release and grid recoil. Nova Pulse is a near-arena-scale event with expanding shockwaves, a dense particle eruption, strong grid deformation and secondary destruction effects. Visual scale should be markedly greater than a routine explosion.
 
-The long-term aspiration is a highly replayable, polished survival mode. Further modes, elaborate menus and online services are secondary to the quality of the core experience.
+Use deliberately strong bloom and emissive rendering while preserving crisp geometric cores and readable threats. The default aesthetic is blue/cyan, not green. Provide reduced-flashing, bloom and screen-shake settings where feasible without weakening the default target.
+
+Use the original ExoSpace typography where available and permitted. The main menu is a full-screen, animated cosmic arcade presentation with a large title, simple vertically arranged actions and coherent neon-blue styling. HUD, pause, settings, results and high scores share this identity. Avoid generic web dashboard styling. Sound design should reinforce weapons, impacts, warnings and detonations.

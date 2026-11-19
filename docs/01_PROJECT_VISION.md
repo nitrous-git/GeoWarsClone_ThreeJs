@@ -1,4 +1,4 @@
-# Geometry Wars — Web Remake
+# VECTOR//NOVA — Web 
 
 ## Vision
 

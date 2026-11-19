@@ -6,11 +6,9 @@ Original repository: https://github.com/nitrous-git/GeometryWars_JavaGL_Prototyp
 
 Reference implementation: `GW_v1.06/src` on `main`.
 
-Original gameplay footage: https://www.youtube.com/watch?v=r71hPwIgX1c
-
 The Java source is the primary reference for existing simulation and gameplay concepts. Particularly relevant files include `game/Game.java`, `entities/Player.java`, `manager/WeaponManager.java`, `entities/enemy/EnemyA.java` through `EnemyD.java`, `entities/particle_system/BlackholeSystem.java`, the other particle systems and `warping_grid/{Grid,Particle,Spring}.java`. Arena proportions are originally 1280 × 960 with a 1200 × 880 inner grid; these provide a sensible initial reference rather than a mandatory resolution.
 
-The `src/res` directory contains player, projectile, enemy and background PNGs and `ExoSpace.ttf`. Reuse, reinterpret or replace assets as appropriate. Verify asset and font provenance before public redistribution; repository presence alone does not establish licensing rights.
+The `src/res` directory contains player, projectile, enemy and background PNGs and `ExoSpace.ttf`. Reuse, reinterpret or replace assets as appropriate. 
 
 ## Deployment model
 

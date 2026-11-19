@@ -21,8 +21,28 @@ export class Lattice {
       this.vy[id] += force*(dy*strength+dx*swirl);
     }
   }
+  wake(x,y,vx,vy,dt){
+    const speed=Math.hypot(vx,vy)||1;
+    const radius=3.9;
+    for(let j=Math.max(1,Math.ceil((y-radius+ARENA.halfHeight)/this.sy));j<=Math.min(this.rows-2,(y+radius+ARENA.halfHeight)/this.sy);j++){
+      for(let i=Math.max(1,Math.ceil((x-radius+ARENA.halfWidth)/this.sx));i<=Math.min(this.cols-2,(x+radius+ARENA.halfWidth)/this.sx);i++){
+        const dx=i*this.sx-ARENA.halfWidth-x,dy=j*this.sy-ARENA.halfHeight-y;
+        const f=Math.max(0,1-Math.hypot(dx,dy)/radius)**2*dt*590/speed;
+        const k=j*this.cols+i;this.vx[k]+=vx*f;this.vy[k]+=vy*f;
+      }
+    }
+  }
+  front(x,y,previous,radius){
+    for(let j=1;j<this.rows-1;j++)for(let i=1;i<this.cols-1;i++){
+      const dx=i*this.sx-ARENA.halfWidth-x,dy=j*this.sy-ARENA.halfHeight-y;
+      const d2=dx*dx+dy*dy;
+      if(d2<=previous*previous || d2>radius*radius)continue;
+      const k=j*this.cols+i,d=Math.sqrt(d2),f=53/(d*(1+d*.013));
+      this.vx[k]+=dx*f;this.vy[k]+=dy*f;
+    }
+  }
   step(dt) {
-    const {cols,rows,x,y,vx,vy}=this, decay=Math.exp(-3.9*dt);
+    const {cols,rows,x,y,vx,vy}=this, decay=Math.exp(-3.15*dt);
     for(let j=1;j<rows-1;j++) for(let i=1;i<cols-1;i++) {
       const k=j*cols+i;
       vx[k]=clamp((vx[k]+dt*(126*(x[k-1]+x[k+1]+x[k-cols]+x[k+cols]-4*x[k])-13*x[k]))*decay,-34,34);

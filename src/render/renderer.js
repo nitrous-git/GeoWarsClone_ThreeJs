@@ -1,8 +1,9 @@
 import * as T from 'three';
 import { ARENA, TAU, rng } from '../game/rules.js';
 import { border } from './border.js';
+import { SpriteBatch } from './sprite-batch.js';
 import { Ink } from './ink.js';
-import { craft, fluxGlyph, glyph, fieldLights } from './glyphs.js';
+import { craft, fluxGlyph, glyph, fieldLights, orbitTrails } from './glyphs.js';
 import { Effects } from './effects.js';
 import { quadVertex,screenVertex,backdropFragment,wellFragment,blurFragment,finalFragment } from './shaders.js';
 const uni=value=>({value});
@@ -32,8 +33,8 @@ class GridView {
       gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
       `varying float strain;varying vec2 location;void main(){
       float belt=.5+.5*sin(location.x*.055+location.y*.124);
-      vec3 base=mix(vec3(.052,.119,.154),vec3(.071,.125,.179),belt);
-      gl_FragColor=vec4(base+vec3(.06,.27,.39)*min(1.4,strain),.84);}`,{},
+      vec3 base=mix(vec3(.034,.054,.19),vec3(.051,.10,.31),belt);
+      gl_FragColor=vec4(base+vec3(.13,.20,.64)*min(1.65,strain),.84);}`,{},
       {transparent:true,blending:additive});
     const m=new T.LineSegments(this.geo,this.mat);m.frustumCulled=false;m.renderOrder=1;scene.add(m);
   }
@@ -49,23 +50,24 @@ export class Display {
     this.gl=new T.WebGLRenderer({canvas,context,antialias:false,alpha:false,powerPreference:'high-performance'});
     this.gl.autoClear=false;this.noise=makeNoise();this.plane=new T.PlaneGeometry(2,2);
     this.screenCam=new T.Camera();this.camera=new T.OrthographicCamera(-56,56,35,-35,.01,100);
-    this.camera.position.z=10;this.screenScene=new T.Scene();this.scene=new T.Scene();this.effects=new Effects();
+    this.camera.position.z=10;this.screenScene=new T.Scene();this.scene=new T.Scene();this.effects=new Effects(settings);
     this.back=material(screenVertex,backdropFragment,{time:uni(0),grain:uni(this.noise),aspect:uni(1),menu:uni(1),
       radius:uni(.16),center:uni(new T.Vector2(.70,.52)),reduced:uni(0)});
     this.blur=material(screenVertex,blurFragment,{source:uni(null),stride:uni(new T.Vector2()),extract:uni(0)});
     this.lenses=[new T.Vector4(),new T.Vector4()];
-    this.final=material(screenVertex,finalFragment,{sceneTex:uni(null),bloomTex:uni(null),
+    this.final=material(screenVertex,finalFragment,{sceneTex:uni(null),bloomTex:uni(null),wideTex:uni(null),
       bloom:uni(.6),aspect:uni(1),lenses:uni(this.lenses)});
     this.quad=new T.Mesh(this.plane,this.back);this.quad.frustumCulled=false;this.screenScene.add(this.quad);
-    this.grid=new GridView(this.scene,world.grid);
+    this.sprites=new SpriteBatch(this.scene);this.grid=new GridView(this.scene,world.grid);
     this.rim=new Ink(this.scene,1.1,false,5500);this.rim.begin();border(this.rim);this.rim.end();
     this.light=new Ink(this.scene,1.4,true,14000);this.ink=new Ink(this.scene,3,false,90000);this.fx=new Ink(this.scene,4,true,95000);
     this.holes=Array.from({length:2},()=>{
       const mat=material(quadVertex,wellFragment,{grain:uni(this.noise),time:uni(0),hot:uni(0)},{transparent:true});
       const m=new T.Mesh(this.plane,mat);m.renderOrder=2;m.scale.setScalar(7.1);this.scene.add(m);return m;
     });
-    const options={minFilter:T.LinearFilter,magFilter:T.LinearFilter,depthBuffer:false,stencilBuffer:false};
+    const options={type:this.gl.extensions.has('EXT_color_buffer_float')?T.HalfFloatType:T.UnsignedByteType,minFilter:T.LinearFilter,magFilter:T.LinearFilter,depthBuffer:false,stencilBuffer:false};
     this.target=new T.WebGLRenderTarget(1,1,options);
+    this.wide=new T.WebGLRenderTarget(1,1,options);this.haze=new T.WebGLRenderTarget(1,1,options);
     this.bright=new T.WebGLRenderTarget(1,1,options);this.soft=new T.WebGLRenderTarget(1,1,options);
     this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(canvas);this.resize();
   }
@@ -76,6 +78,7 @@ export class Display {
     const w=Math.max(2,Math.round(this.width*ratio)),h=Math.max(2,Math.round(this.height*ratio));
     this.gl.setSize(w,h,false);this.target.setSize(w,h);
     this.bright.setSize(Math.max(1,w>>2),Math.max(1,h>>2));this.soft.setSize(this.bright.width,this.bright.height);
+    this.wide.setSize(Math.max(1,w>>4),Math.max(1,h>>4));this.haze.setSize(this.wide.width,this.wide.height);
     const hh=Math.max(34.5,54.5/this.aspect);this.hh=hh;this.hw=hh*this.aspect;
     Object.assign(this.camera,{left:-this.hw,right:this.hw,top:hh,bottom:-hh});this.camera.updateProjectionMatrix();
     this.back.uniforms.aspect.value=this.final.uniforms.aspect.value=this.aspect;
@@ -101,20 +104,12 @@ export class Display {
       m.material.uniforms.time.value=t+e.phase;
       m.material.uniforms.hot.value=e.hit*8+(1-e.hp/10)*.24;
       this.lenses[holes].set(.5+(e.x-this.camera.position.x)/(2*this.hw),.5+(e.y-this.camera.position.y)/(2*this.hh),5/this.hh,1);
-      for(let i=0;i<34;i++){
-        const a=i*2.39996+t*(i%2?.67:.48),rad=2.2+(i%9)*.39;
-        const x=e.x+Math.cos(a)*rad,y=e.y+Math.sin(a)*rad*.62;
-        this.fx.stroke(x,y,x+Math.sin(a)*.17,y-Math.cos(a)*.12,.065,0xffb77b,.8,.12);
-      }
+      orbitTrails(this.fx,e,this.settings.quality==='standard');
       holes++;
     }
     for(let i=holes;i<2;i++){this.holes[i].visible=false;this.lenses[i].w=0;}
     for(const s of w.shards)fluxGlyph(this.ink,s,t);
-    for(const b of w.shots){
-      const k=1/Math.max(1,Math.hypot(b.vx,b.vy)),dx=b.vx*k,dy=b.vy*k;
-      this.fx.stroke(b.x,b.y,b.x-dx*2.6,b.y-dy*2.6,.38,0x31baff,.84,0);
-      this.ink.stroke(b.x+dx*.25,b.y+dy*.25,b.x-dx*.94,b.y-dy*.94,.145,0xd9ffff);
-    }
+    this.sprites.sync(w);
     if(!w.over)craft(this.ink,w.player,t);
     this.effects.draw(this.fx,this.settings.reduced);this.ink.end();this.fx.end();
     this.gl.render(this.scene,this.camera);
@@ -131,13 +126,15 @@ export class Display {
     if(this.settings.bloom){
       b.source.value=this.target.texture;b.extract.value=1;b.stride.value.set(2.4/this.target.width,0);this.pass(this.blur,this.bright);
       b.source.value=this.bright.texture;b.extract.value=0;b.stride.value.set(0,1.65/this.bright.height);this.pass(this.blur,this.soft);
+      b.source.value=this.soft.texture;b.stride.value.set(3/this.soft.width,0);this.pass(this.blur,this.wide);
+      b.source.value=this.wide.texture;b.stride.value.set(0,1.5/this.wide.height);this.pass(this.blur,this.haze);
     }
-    this.final.uniforms.sceneTex.value=this.target.texture;this.final.uniforms.bloomTex.value=this.soft.texture;
-    this.final.uniforms.bloom.value=this.settings.bloom?(this.settings.reduced?.38:.78):0;this.pass(this.final,null);
+    this.final.uniforms.wideTex.value=this.haze.texture;this.final.uniforms.sceneTex.value=this.target.texture;this.final.uniforms.bloomTex.value=this.soft.texture;
+    this.final.uniforms.bloom.value=this.settings.bloom?(this.settings.reduced?.46:1.46):0;this.pass(this.final,null);
   }
   dispose(){
-    this.observer.disconnect();this.grid.dispose();this.light.dispose();this.ink.dispose();this.fx.dispose();this.rim.dispose();
+    this.observer.disconnect();this.grid.dispose();this.sprites.dispose();this.light.dispose();this.ink.dispose();this.fx.dispose();this.rim.dispose();
     for(const m of this.holes)m.material.dispose();
-    for(const r of [this.plane,this.noise,this.back,this.blur,this.final,this.target,this.bright,this.soft,this.gl])r.dispose();
+    for(const r of [this.plane,this.noise,this.back,this.blur,this.final,this.target,this.bright,this.soft,this.wide,this.haze,this.gl])r.dispose();
   }
 }

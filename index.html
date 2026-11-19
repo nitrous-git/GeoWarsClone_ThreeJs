@@ -26,7 +26,7 @@
     <header class="topbar">
       <div class="studio"><svg class="brand-mark"><use href="#mark"/></svg><span>NITROUS <b>STUDIO</b></span></div>
       <span class="head-rule"></span>
-      <span class="header-mode" id="header-mode">Arcade division</span>
+      <span class="header-mode" id="header-mode">Arcade survival</span>
       <div class="header-actions">
         <button class="utility sound" id="sound-btn" aria-label="Mute sound"><svg><use href="#sound"/></svg><span id="sound-label">Sound on</span></button>
         <button class="utility" id="fullscreen" aria-label="Enter fullscreen" title="Fullscreen"><svg><use href="#expand"/></svg></button>
@@ -36,16 +36,16 @@
     <main id="stage">
       <canvas id="screen" aria-label="VECTOR//NOVA arcade arena"></canvas>
       <div class="menu-overlay" id="home">
-        <div class="top-index"><i></i> Survival arcade <span>/</span> Vol. 01</div>
         <div class="menu-main">
-          <div class="edition"><span class="ticks"></span> P1 <span class="dim">//</span> Genesis</div>
-          <h1 aria-label="VECTOR//NOVA"><span>VECTOR</span><span><i>//</i>NOVA</span></h1>
-          <p class="intro">Pilot the lattice. Break the swarm.<br>Turn gravity into your weapon.</p>
-          <button class="launch" id="launch" disabled><svg><use href="#play"/></svg><span id="launch-label">Initializing</span><kbd>Enter <svg><use href="#enter"/></svg></kbd></button>
-          <div class="secondary"><button id="manual-btn"><svg><use href="#book"/></svg>Field manual</button><button id="settings-btn"><svg><use href="#settings"/></svg>Settings</button></div>
+          <p class="eyebrow"><i></i>Geometric survival<i></i></p>
+          <h1 aria-label="VECTOR//NOVA"><span>VECTOR</span><i>//</i><span>NOVA</span></h1>
+          <nav class="arcade-nav" aria-label="Main menu">
+            <button class="launch" id="launch" disabled><span id="launch-label">Initializing</span></button>
+            <button id="scores-btn">High scores</button>
+            <button id="settings-btn">Settings</button>
+            <button id="manual-btn">How to play</button>
+          </nav>
         </div>
-        <div class="plate-label"><span><i></i> Anomaly study</span><strong>Singularity</strong><small>FIG. 04 <em>/</em> GRAVITY WELL</small></div>
-        <div class="corners" aria-hidden="true"></div>
       </div>
       <div id="hud" hidden>
         <div class="hud-block score"><small>Score</small><b id="score">000000</b><span id="mult">×1</span></div>
@@ -58,7 +58,7 @@
       <div id="graphic-error" role="alert" hidden><b>Graphics unavailable</b><p id="error-copy"></p><button onclick="location.reload()">Reload</button></div>
     </main>
     <footer id="footer">
-      <div id="menu-footer"><span class="live"><i></i> Flight deck</span><span class="footer-sep"></span><span class="foot-mode"><b>WASD</b> Move <span>·</span> <b>Mouse</b> Aim & fire</span><span class="best"><svg><use href="#trophy"/></svg> Personal best <b id="best">000000</b></span></div>
+      <div id="menu-footer"><span class="live"><i></i> Flight deck</span><span class="footer-sep"></span><span class="foot-mode"><b>A / D</b> Rotate <span>·</span> <b>W</b> Thrust <span>·</span> <b>Mouse</b> Aim & fire</span><span class="best"><svg><use href="#trophy"/></svg> Personal best <b id="best">000000</b></span></div>
       <div id="game-footer" hidden><span class="weapon"><i></i><small>Weapon</small><b id="weapon">I / Pulse lance</b></span><span class="flux"><small>Flux</small><b id="flux">0 / 4</b></span><button id="pulse"><span class="pulse-meter"></span><strong>Nova pulse</strong> <small id="pulse-info">Ready · Space</small></button></div>
     </footer>
   </div>

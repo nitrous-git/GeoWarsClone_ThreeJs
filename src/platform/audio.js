@@ -52,7 +52,10 @@ export class Synth {
       case 'shot':tone(650+e.tier*110,125,.095,.15,'triangle');tone(3200,290,.053,.12,'noise');break;
       case 'impact':tone(330,74,.1,.18,'square');break;
       case 'burst':tone(e.kind==='spinner'?240:160,42,.24,.28,'triangle');tone(3300,150,.22,.25,'noise');break;
-      case 'pulse':case 'collapse':case 'death':
+      case 'pulse':
+        tone(85,23,1.12,.80);tone(4400,65,.91,.64,'noise');tone(260,52,.87,.21,'triangle',.06);
+        tone(680,190,.61,.13,'sine',.22);break;
+      case 'collapse':case 'death':
         tone(118,26,.82,.67);tone(1000,54,.68,.55,'noise');tone(600,65,.6,.19,'sawtooth',.07);break;
       case 'damage':tone(186,51,.29,.41,'sawtooth');tone(1800,140,.22,.31,'noise');break;
       case 'lock':tone(287,360,.17,.14,'triangle');tone(360,510,.14,.12,'triangle',.14);break;

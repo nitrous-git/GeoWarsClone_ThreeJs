@@ -11,7 +11,7 @@ export async function start(){
   const display=await createDisplay($('screen'),world,settings),audio=new Synth(settings);
   let state='menu',last=performance.now(),accumulator=0,sceneTime=0,dying=0,prior=profile.best;
   let frameId,stopped=false,contextLost=false,lastPaint=-Infinity;
-  let ui,input;
+  let ui,input,lab;
   function enter(next){
     state=next;accumulator=0;lastPaint=-Infinity;last=performance.now();input.clear();ui.setScene(next);
     audio.ambience(next==='play',false);
@@ -24,20 +24,22 @@ export async function start(){
   function pause(){if(state==='play'){enter('pause');ui.open('pause');}}
   function resume(){if(state==='pause'&&!contextLost){audio.unlock();enter('play');ui.tick(world,0,true);}}
   function results(){
+    if(lab){menu();return;}
+    if(world.score>0){profile.scores.push(world.score);profile.scores.sort((a,b)=>b-a);profile.scores.length=Math.min(10,profile.scores.length);}
     profile.best=Math.max(profile.best,world.score);saveProfile(profile);ui.refreshProfile();
     enter('results');ui.tick(world,0,true);ui.results(world,prior);
   }
   function menu(){
-    display.effects.reset();enter('menu');$('launch').focus({preventScroll:true});
+    lab?.dispose();lab=null;display.effects.reset();enter('menu');$('launch').focus({preventScroll:true});
   }
   function back(){
-    if(ui.panel==='settings'||ui.panel==='manual'){
+    if(ui.panel==='settings'||ui.panel==='manual'||ui.panel==='scores'){
       if(state==='pause')ui.open('pause');else ui.close();return;
     }
     if(state==='play')pause();else if(state==='pause')resume();else if(state==='results')menu();
   }
   function confirm(){
-    if(ui.panel==='settings'||ui.panel==='manual'){back();return;}
+    if(ui.panel==='settings'||ui.panel==='manual'||ui.panel==='scores'){back();return;}
     if(state==='menu'||state==='results')newRun();else if(state==='pause')resume();
   }
   const actions={
@@ -46,9 +48,9 @@ export async function start(){
     stick:(side,s)=>ui.stick(side,s),
     pulse:()=>{if(state==='play')input.pulse=true;},
     mute:()=>{settings.muted=!settings.muted;audio.unlock();audio.volume();ui.refreshProfile();saveProfile(profile);},
-    settings:key=>{if(key==='volume'){audio.unlock();audio.volume();}if(key==='quality')display.resize();saveProfile(profile);}
+    settings:key=>{if(key==='steering')ui.refreshProfile();if(key==='volume'){audio.unlock();audio.volume();}if(key==='quality')display.resize();saveProfile(profile);}
   };
-  ui=new Interface(profile,actions);input=new Controls($('screen'),actions);
+  ui=new Interface(profile,actions);input=new Controls($('screen'),actions,settings);
   document.addEventListener('click',e=>{
     if(e.target.closest('button') && state!=='play' && e.target.closest('#graphic-error')===null){audio.unlock();audio.chirp();}
   });
@@ -70,7 +72,12 @@ export async function start(){
     if(state==='play'){
       accumulator+=dt;
       while(accumulator+1e-9>=STEP && state==='play'){
-        accumulator-=STEP;world.step(STEP,input.sample(world.player,display));applyEvents();
+        accumulator-=STEP;
+        if(lab){
+          if(!lab.frozen)lab.step(STEP,input.sample(world.player,display));
+          sceneTime=lab.time;continue;
+        }
+        world.step(STEP,input.sample(world.player,display));applyEvents();
         if(!world.over)display.effects.wakes(world);
         display.effects.advance(STEP);sceneTime+=STEP;
         if(world.over){dying=.82;enter('dying');ui.tick(world,0,true);}
@@ -98,5 +105,15 @@ export async function start(){
     if(e.persisted){pause();return;}
     stopped=true;cancelAnimationFrame(frameId);input.dispose();display.dispose();audio.dispose();
   });
-  ui.setScene('menu');$('launch').disabled=false;$('launch-label').textContent='Launch run';frameId=requestAnimationFrame(frame);
+  ui.setScene('menu');$('launch').disabled=false;$('launch-label').textContent='Start game';
+  const params=new URLSearchParams(location.search);
+  if(params.has('lab')){
+    const {installLab}=await import('./platform/lab.js');
+    enter('play');lab=installLab(world,display,applyEvents,ui,params.get('lab'));
+    if(params.has('frame')){
+      const frame=Number(params.get('frame'));
+      if(Number.isSafeInteger(frame)&&frame>=0){lab.capture(frame);sceneTime=lab.time;}
+    }
+  }
+  frameId=requestAnimationFrame(frame);
 }

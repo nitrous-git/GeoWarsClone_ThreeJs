@@ -16,7 +16,7 @@ export class Ink {
     this.mat=new T.ShaderMaterial({transparent:true,depthTest:false,depthWrite:false,side:T.DoubleSide,
       blending:add?T.AdditiveBlending:T.NormalBlending,
       vertexShader:'attribute vec4 tint;varying vec4 c;void main(){c=tint;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-      fragmentShader:'varying vec4 c;void main(){gl_FragColor=c;}'});
+      fragmentShader:'varying vec4 c;void main(){gl_FragColor=vec4(c.rgb*'+(add?'1.55':'1.15')+',c.a);}'});
     this.mat.forceSinglePass=true;
     const mesh=new T.Mesh(this.geo,this.mat);mesh.frustumCulled=false;mesh.renderOrder=order;scene.add(mesh);
   }

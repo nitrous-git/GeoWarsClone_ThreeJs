@@ -7,7 +7,7 @@ export class Interface {
   constructor(profile,actions) {
     this.profile=profile;this.actions=actions;this.panel=null;this.home=true;this.toast=0;this.hudTime=0;
     this.dialog=$('dialog');this.layer=$('dialog-layer');
-    $('launch').onclick=actions.start;$('settings-btn').onclick=()=>this.open('settings');
+    $('scores-btn').onclick=()=>this.open('scores');$('launch').onclick=actions.start;$('settings-btn').onclick=()=>this.open('settings');
     $('manual-btn').onclick=()=>this.open('manual');$('pause-btn').onclick=actions.pause;
     $('pulse').onclick=actions.pulse;$('sound-btn').onclick=actions.mute;
     $('fullscreen').onclick=async()=>{
@@ -17,7 +17,7 @@ export class Interface {
     document.addEventListener('fullscreenchange',()=>{
       $('fullscreen').setAttribute('aria-label',document.fullscreenElement?'Exit fullscreen':'Enter fullscreen');
     });
-    this.layer.onpointerdown=e=>{if(e.target===this.layer && ['settings','manual'].includes(this.panel))actions.back();};
+    this.layer.onpointerdown=e=>{if(e.target===this.layer && ['settings','manual','scores'].includes(this.panel))actions.back();};
     this.dialog.onkeydown=e=>{
       if(e.key!=='Tab')return;
       const focusable=[...this.dialog.querySelectorAll('button,input,select')],first=focusable[0],last=focusable.at(-1);
@@ -27,14 +27,16 @@ export class Interface {
     this.refreshProfile();
   }
   refreshProfile(){
-    const s=this.profile.settings;$('sound-label').textContent=s.muted?'Sound off':'Sound on';
+    const s=this.profile.settings;
+    document.querySelector('.foot-mode').innerHTML=s.steering==='directional'?'<b>WASD</b> Move · <b>Mouse</b> Aim & fire':'<b>A / D</b> Rotate · <b>W</b> Thrust · <b>Mouse</b> Aim & fire';
+    $('sound-label').textContent=s.muted?'Sound off':'Sound on';
     $('sound-btn').setAttribute('aria-label',s.muted?'Unmute sound':'Mute sound');$('sound-btn').setAttribute('aria-pressed',s.muted);
     $('best').textContent=digits(this.profile.best);
   }
   setScene(state){
     this.home=state==='menu';document.body.dataset.view=this.home?'menu':state;
     $('hud').hidden=this.home;$('game-footer').hidden=this.home;$('menu-footer').hidden=!this.home;
-    $('header-mode').textContent=this.home?'Arcade division':'Genesis / Endless survival';
+    $('header-mode').textContent=this.home?'Arcade survival':'Endless survival';
     $('notice').classList.remove('visible');$('notice').replaceChildren();this.toast=0;this.hudTime=0;
     this.close(false);
   }
@@ -54,25 +56,30 @@ export class Interface {
   }
   open(name,tab='controls'){
     const s=this.profile.settings;
-    if(name==='manual'){
-      const controls='<div class="entry"><b>Move</b><kbd>W A S D</kbd></div><div class="entry"><b>Aim & fire</b><kbd>Mouse + LMB / Arrow keys</kbd></div><div class="entry"><b>Nova pulse</b><kbd>Space / RMB</kbd></div><div class="entry"><b>Pause</b><kbd>Esc / P</kbd></div><p>Gamepad uses left stick to move, right stick to shoot, a bumper to pulse and Start to pause. On touchscreens, drag on each half of the arena and tap Nova pulse. Landscape gives the widest view.</p>';
+    if(name==='scores'){
+      const rows=this.profile.scores.map((score,i)=>'<li><span>'+String(i+1).padStart(2,'0')+'</span><b>'+digits(score)+'</b></li>').join('');
+      this.shell(name,'Local records','High scores',rows?'<ol class="records">'+rows+'</ol>':'<p>Finish a scored run to set your first record.</p>');
+    }else if(name==='manual'){
+      const controls='<div class="entry"><b>Steering</b><kbd>'+(s.steering==='thrust'?'A / D rotate · W thrust':'W A S D move')+'</kbd></div><div class="entry"><b>Aim & fire</b><kbd>Mouse + LMB / Arrow keys</kbd></div><div class="entry"><b>Nova pulse</b><kbd>Space / RMB</kbd></div><div class="entry"><b>Pause</b><kbd>Esc / P</kbd></div><p>Gamepad uses left stick to move, right stick to shoot, a bumper to pulse and Start to pause. On touchscreens, drag on each half of the arena and tap Nova pulse. Landscape gives the widest view.</p>';
       const threats=[
+        ['⌁','#ffae45','Snake','Avoid every golden link. Aim at the violet head to break the chain.'],
         ['◇','#62d8ff','Hunter','Pursues in wings. Cut across its approach.'],
         ['✥','#fc69c0','Spinner','Banks off walls. Red variants mark a lane, then charge.'],
         ['»','#d1fb73','Stalker','Sidesteps fire. Track its lane after the dodge.'],
         ['◎','#ffac76','Singularity','Bends shots and draws ships inward. Break the core to clear a radius.']
       ].map(([shape,c,n,d])=>'<div class="entry"><b><i class="enemy-dot" style="color:'+c+'">'+shape+'</i>'+n+'</b><p>'+d+'</p></div>').join('');
-      this.shell(name,'Flight systems / Reference','Field manual','<div class="subnav"><button id="tab-controls" aria-pressed="'+(tab==='controls')+'">Controls</button><button id="tab-threats" aria-pressed="'+(tab==='threats')+'">Field index</button></div>'+
+      this.shell(name,'Flight systems / Reference','How to play','<div class="subnav"><button id="tab-controls" aria-pressed="'+(tab==='controls')+'">Controls</button><button id="tab-threats" aria-pressed="'+(tab==='threats')+'">Field index</button></div>'+
         (tab==='controls'?controls:threats)+'<p>Collect four gold flux shards to raise your multiplier. Hull damage resets it. Score unlocks stronger lances at 1,500, 4,500 and 12,000.</p>');
       for(const v of ['controls','threats'])$('tab-'+v).onclick=()=>{this.open('manual',v);$('tab-'+v).focus();};
     }else if(name==='settings'){
       const check=(key,label)=>'<div class="row"><label for="opt-'+key+'">'+label+'</label><input type="checkbox" id="opt-'+key+'" '+(s[key]?'checked':'')+'></div>';
       this.shell(name,'Flight systems / Configuration','Settings',
         '<div class="row"><label for="opt-volume">Master volume <small id="volume-value">'+s.volume+'%</small></label><input id="opt-volume" type="range" min="0" max="100" value="'+s.volume+'"></div>'+
-        '<div class="row"><label for="opt-quality">Render resolution</label><select id="opt-quality"><option value="high">High</option><option value="standard">Standard</option></select></div>'+
-        check('bloom','Bloom')+check('shake','Camera shake')+check('reduced','Reduced effects')+'<p>Reduced effects soften bursts, slow the anomaly study and disable camera shake.</p>');
-      $('opt-quality').value=s.quality;
-      for(const key of ['volume','quality','bloom','shake','reduced']){
+        '<div class="row"><label for="opt-quality">Graphics quality</label><select id="opt-quality"><option value="high">High</option><option value="standard">Standard</option></select></div>'+
+        '<div class="row"><label for="opt-steering">Keyboard steering</label><select id="opt-steering"><option value="thrust">Rotate + thrust</option><option value="directional">Directional WASD</option></select></div>'+
+        check('bloom','Bloom')+check('shake','Camera shake')+check('reduced','Reduced effects')+'<p>Reduced effects soften bursts, reduce particle density and disable camera shake.</p>');
+      $('opt-quality').value=s.quality;$('opt-steering').value=s.steering;
+      for(const key of ['volume','quality','steering','bloom','shake','reduced']){
         const el=$('opt-'+key);el.oninput=()=>{
           s[key]=el.type==='checkbox'?el.checked:key==='volume'?Number(el.value):el.value;
           $('volume-value').textContent=s.volume+'%';this.actions.settings(key);

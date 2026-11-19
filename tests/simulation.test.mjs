@@ -44,8 +44,8 @@ test('well attraction bends a passing shot and a collapsing pair awards each bod
   w.destroy(b,false);assert.equal(w.kills,3);
 });
 test('a pulse has a cooldown, a recovery window and a finite radius',()=>{
-  const w=fixture();const close=enemy(w,'hunter',7,0),far=enemy(w,'hunter',20,0);
-  w.player.grace=0;w.pulse();assert.ok(close.dead&&!far.dead&&w.player.grace>0);const score=w.score;
+  const w=fixture();w.player.x=-43;const close=enemy(w,'hunter',4,0),far=enemy(w,'hunter',46,0);
+  w.player.grace=0;w.pulse();assert.ok(!close.dead&&w.player.grace>0);for(let i=0;i<65;i++)w.advanceWave(STEP);assert.ok(close.dead&&!far.dead);const score=w.score;
   const next=enemy(w,'hunter',8,0);w.pulse();assert.ok(!next.dead);assert.equal(w.score,score);
   tick(w,730);assert.equal(w.player.pulse,0);
 });

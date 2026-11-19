@@ -4,11 +4,11 @@ export const SECTORS = ['First contact','Cross current','Fault line','Event hori
 // Each score is a phrase of formations with a short window to gather flux.
 const SCORES = [
   [[.3,'wing'],[4.4,'mirror'],[9,'bank'],[14,'wing'],[17,'rift']],
-  [[.4,'cross'],[4,'file'],[8,'bank'],[12,'mirror'],[16,'pinch']],
-  [[.4,'rift'],[3,'bank'],[7,'file'],[10,'wing'],[14,'cross'],[17,'file']],
-  [[.3,'mirror'],[3,'rift'],[6,'pinch'],[9,'file'],[13,'bank'],[16,'cross']],
-  [[.3,'pinch'],[3,'file'],[6,'cross'],[10,'rift'],[13,'bank'],[17,'mirror']],
-  [[.3,'rift'],[2.8,'cross'],[6,'file'],[9,'pinch'],[12,'bank'],[15,'mirror'],[18,'file']]
+  [[.4,'cross'],[4,'file'],[8,'bank'],[10,'snake'],[12,'mirror'],[16,'pinch']],
+  [[.4,'rift'],[3,'bank'],[7,'file'],[10,'wing'],[12,'snake'],[14,'cross'],[17,'file']],
+  [[.3,'mirror'],[3,'rift'],[6,'pinch'],[9,'file'],[11,'snake'],[13,'bank'],[16,'cross']],
+  [[.3,'pinch'],[3,'file'],[6,'cross'],[10,'rift'],[11,'snake'],[13,'bank'],[17,'mirror']],
+  [[.3,'rift'],[2.8,'cross'],[6,'file'],[9,'pinch'],[12,'bank'],[13,'snake'],[15,'mirror'],[18,'file']]
 ];
 export class Director {
   constructor() { this.reset(); }
@@ -33,7 +33,9 @@ export class Director {
     const line=(s,n,type,spacing,stagger=0)=>{
       for(let i=0;i<n;i++) w.spawn(type,...edge(s,center+(i-(n-1)/2)*spacing),i*stagger);
     };
-    if(kind==='rift'){
+    if(kind==='snake'){
+      line(side,this.sector>=5?2:1,'snake',.58,.42);
+    } else if(kind==='rift'){
       if(w.enemies.filter(e=>e.type==='well').length>=2) return;
       w.spawn('well',(w.random()-.5)*W*1.35,(w.random()-.5)*H*1.25,.25);
     } else if(kind==='wing'){

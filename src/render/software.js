@@ -1,8 +1,9 @@
 // Compatibility path for systems without WebGL 2. The simulation, geometry
 // recipes, effects, input, HUD and audio are shared with the Three renderer.
 import { ARENA,TAU } from '../game/rules.js';
+import { atlas,sprites } from './sprites.js';
 import { Effects } from './effects.js';
-import { glyph,craft,fluxGlyph,fieldLights } from './glyphs.js';
+import { glyph,craft,fluxGlyph,fieldLights,orbitTrails } from './glyphs.js';
 import { border } from './border.js';
 const colors=new Map(), lights=new Map();
 function color(n){
@@ -37,13 +38,14 @@ export class CanvasDisplay {
   constructor(canvas,world,settings){
     this.canvas=canvas;this.settings=settings;this.c=canvas.getContext('2d',{alpha:false});
     if(!this.c)throw new Error('Canvas unavailable');
-    this.ink=new CanvasInk(this.c);this.effects=new Effects();this.images={study:plate('study'),sky:plate('sky'),well:plate('well')};
+    this.ink=new CanvasInk(this.c);this.effects=new Effects(settings);this.sheet=atlas();this.glowPlate=document.createElement('canvas');this.images={sky:plate('sky'),well:plate('well')};
     this.sx=0;this.sy=0;this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(canvas);this.resize();
   }
   resize(){
     const r=this.canvas.getBoundingClientRect();this.w=Math.max(1,r.width);this.h=Math.max(1,r.height);
     this.dpr=Math.min(devicePixelRatio||1,this.settings.quality==='high'?1.5:1);
     this.canvas.width=Math.max(1,Math.round(this.w*this.dpr));this.canvas.height=Math.max(1,Math.round(this.h*this.dpr));
+    this.glowPlate.width=Math.max(1,this.canvas.width>>3);this.glowPlate.height=Math.max(1,this.canvas.height>>3);
     this.scale=Math.min(this.h/69,this.w/109);
   }
   aim(x,y,p){const r=this.canvas.getBoundingClientRect();
@@ -53,10 +55,10 @@ export class CanvasDisplay {
     const point=(k,j,i,move)=>{
       const x=i*sx-W+g.x[k],y=j*sy-H+g.y[k];if(move)c.moveTo(x,y);else c.lineTo(x,y);
     };
-    c.lineWidth=.072;c.strokeStyle='#244052';c.globalAlpha=.84;c.beginPath();
+    c.lineWidth=.072;c.strokeStyle='#1b3380';c.globalAlpha=.84;c.beginPath();
     for(let j=0;j<rows;j++)for(let i=0;i<cols;i++)point(j*cols+i,j,i,i===0);
     for(let i=0;i<cols;i++)for(let j=0;j<rows;j++)point(j*cols+i,j,i,j===0);
-    c.stroke();c.strokeStyle='#3988a9';c.beginPath();
+    c.stroke();c.strokeStyle='#536ef2';c.beginPath();
     for(let j=1;j<rows-1;j++)for(let i=1;i<cols-1;i++){
       const k=j*cols+i;if(Math.abs(g.x[k])+Math.abs(g.y[k])<.4)continue;
       point(k-1,j,i-1,true);point(k,j,i,false);point(k+cols,j+1,i,false);
@@ -64,19 +66,38 @@ export class CanvasDisplay {
     c.stroke();c.globalAlpha=1;
   }
   menu(t){
-    const {w,h,c}=this,img=this.images.study,small=innerWidth<=680;
-    if(!img.naturalWidth)return;
-    const rad=small?Math.min(h*.115,w*.19):Math.min(h*.163,w*.125);
-    const iw=1600*rad/(960*.163),ih=960*rad/(960*.163);
-    const x=(small?.69:.727)*w,y=(small?.308:.474)*h;
-    c.drawImage(img,x-iw*.727,y-ih*.474,iw,ih);
-    // Slow orbit tracers keep the pre-rendered plate legible on software GPUs.
-    c.save();c.translate(x,y);c.rotate(-.27);
-    const seconds=this.settings.reduced?t*.12:t;
-    for(let i=0;i<46;i++){
-      const a=i*2.39996+seconds*(.038+(i%5)*.004),r=rad*(1.22+(i%13)*.145);
-      c.fillStyle=i%3?'#e39357':'#ffce93';c.globalAlpha=.32+(i%5)*.07;
-      c.beginPath();c.ellipse(Math.cos(a)*r,Math.sin(a)*r*.238,.7+i%3*.36,.6,0,0,TAU);c.fill();
+    const {w,h,c}=this, time=this.settings.reduced?t*.1:t;
+    // A blue accretion study floats above a perspective grid. The procedural
+    // atmosphere and near stars move independently of the distant plate.
+    const x=w*.84,y=h*.18,r=Math.min(w*.18,h*.25);
+    c.save();
+    const haze=c.createRadialGradient(x,y,r*.36,x,y,r*2.85);
+    haze.addColorStop(0,'#586eff66');haze.addColorStop(.41,'#152b9147');haze.addColorStop(1,'#06134000');
+    c.fillStyle=haze;c.fillRect(0,0,w,h);
+    const planet=c.createRadialGradient(x-r*.66,y+r*.65,r*.05,x,y,r);
+    planet.addColorStop(0,'#304573');planet.addColorStop(.62,'#12224a');planet.addColorStop(.96,'#0a122c');planet.addColorStop(1,'#5496ea');
+    c.fillStyle=planet;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();
+    c.save();c.translate(x,y);c.rotate(-.30);
+    for(let i=0;i<22;i++){
+      const radius=r*(1.15+i*.0205);c.beginPath();
+      c.ellipse(0,0,radius,radius*.205,0,-.18,Math.PI+.20);
+      c.strokeStyle=i%5===0?'#9edcff':'#737cf7';c.lineWidth=i%5===0?1.8:.65;c.globalAlpha=.28+.3*Math.sin(i*1.9)**2;c.stroke();
+    }
+    c.restore();
+    const horizon=h*.70,vanish=w*.5;
+    c.strokeStyle='#465bda';c.lineWidth=1;c.beginPath();
+    for(let i=-17;i<=17;i++){c.moveTo(vanish+i*w*.009,horizon+2);c.lineTo(vanish+i*w*.114,h);}
+    for(let i=0;i<14;i++){
+      const phase=((i+time*.18)%14)/14,yy=horizon+(h-horizon)*phase**2.4;
+      c.moveTo(0,yy);c.lineTo(w,yy);
+    }
+    c.globalAlpha=.37;c.stroke();
+    const fog=c.createLinearGradient(0,horizon-15,0,h);
+    fog.addColorStop(0,'#080e1e00');fog.addColorStop(.055,'#111a39e0');fog.addColorStop(.23,'#0a123455');fog.addColorStop(1,'#0b154000');
+    c.globalAlpha=1;c.fillStyle=fog;c.fillRect(0,horizon-15,w,h-horizon+15);
+    for(let i=0;i<90;i++){
+      const xx=((i*.618034+time*.0014)%1)*w,yy=((i*.382741+time*.0019)%1)*h;
+      c.fillStyle=i%3?'#90bbff':'#e1f6ff';c.globalAlpha=.23+.36*Math.sin(i+time*.4)**2;c.fillRect(xx,yy,i%4?1.1:2,1.2);
     }
     c.restore();
   }
@@ -96,19 +117,24 @@ export class CanvasDisplay {
     for(const e of w.enemies){
       if(e.type==='well'&&e.warn<=0&&this.images.well.naturalWidth){
         c.save();c.translate(e.x,e.y);c.scale(1,-1);c.globalAlpha=1;c.drawImage(this.images.well,-7.1,-7.1,14.2,14.2);c.restore();
-        for(let i=0;i<20;i++){const a=i*2.39996+t*(i%2?.67:.48),r=2.2+(i%9)*.39;
-          const x=e.x+Math.cos(a)*r,y=e.y+Math.sin(a)*r*.62;ink.stroke(x,y,x+Math.sin(a)*.19,y-Math.cos(a)*.14,.077,0xffbc83,.82);}
+        orbitTrails(ink,e,this.settings.quality==='standard');
       }else{c.shadowBlur=glow?4:0;c.shadowColor='#477081';glyph(ink,e,t);}
     }
     c.shadowBlur=0;
     for(const s of w.shards)fluxGlyph(ink,s,t);
-    for(const b of w.shots){
-      const len=Math.hypot(b.vx,b.vy)||1,dx=b.vx/len,dy=b.vy/len;
-      ink.stroke(b.x,b.y,b.x-dx*2.1,b.y-dy*2.1,.36,0x3399da,.65,.1);
-      ink.stroke(b.x+dx*.2,b.y+dy*.2,b.x-dx,b.y-dy,.15,0xd8ffff);
-    }
+    if(this.sheet.naturalWidth)sprites(w,(tile,x,y,a,sw,sh)=>{
+      c.save();c.globalAlpha=1;c.translate(x,y);c.rotate(a);c.scale(1,-1);
+      c.shadowBlur=glow?5:0;c.shadowColor=tile===5?'#ff9225':'#6cafff';
+      c.drawImage(this.sheet,tile*64,0,64,64,-sw/2,-sh/2,sw,sh);c.restore();
+    });
     if(!w.over)craft(ink,w.player,t);
     c.globalCompositeOperation='lighter';this.effects.draw(ink,this.settings.reduced);c.restore();
+    if(glow){
+      const glowCtx=this.glowPlate.getContext('2d');
+      glowCtx.drawImage(this.canvas,0,0,this.glowPlate.width,this.glowPlate.height);
+      c.save();c.globalCompositeOperation='lighter';c.globalAlpha=.66;
+      c.filter='blur(3px)';c.drawImage(this.glowPlate,0,0,this.w,this.h);c.restore();
+    }
   }
   dispose(){this.observer.disconnect();}
 }

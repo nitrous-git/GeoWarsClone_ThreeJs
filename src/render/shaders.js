@@ -87,27 +87,30 @@ void main(){
   col+=vec3(.61,.78,.85)*stars;
   col+=vec3(.73,.81,.86)*starfield(field*.68+15.,70.)*.82;
   if(menu>.5){
-    col+=vec3(.21,.078,.044)*pow(neb*1.24,3.)*exp(-dist*.58);
-    vec2 disk=turn(-.27)*q;
-    vec2 g=vec2(disk.x,disk.y*2.15);
-    float gr=length(g);
-    // An inverted lens map makes the Cartesian sheet wind into the horizon.
-    g*=1.+.82/(gr*gr+.15);
-    g=turn(.26/(gr+.3))*g;
-    vec2 scaled=g*3.5;
-    vec2 gx=abs(fract(scaled-.5)-.5)/max(fwidth(scaled),vec2(.001));
-    float wire=1.-smoothstep(.0,1.15,min(gx.x,gx.y));
-    float sheet=exp(-.13*gr*gr)*smoothstep(.8,1.35,dist)*(.45+.55*neb);
-    col+=wire*sheet*vec3(.20,.185,.16);
-    float orbit=length(vec2(disk.x,disk.y*1.52));
-    float outer=hair(orbit-2.95,.0025)*.27+hair(orbit-3.37,.0018)*.18;
-    col+=outer*vec3(.7,.66,.53);
-    float cyl=length(vec2(disk.x,disk.y*2.0));
-    float orbitDots=starfield(vec2(atan(disk.y*2.,disk.x)/6.283+.5,cyl*.25)+vec2(t*.002,0.),140.);
-    col+=orbitDots*vec3(.85,.40,.20)*exp(-pow((cyl-2.)/1.25,2.));
-    col=horizon(q,t,col);
-    float ink=mix(.56,1.,smoothstep(.12,.54,vUv.x));
-    col*=ink;
+    // The distant blue limb and its inclined rings frame the title.
+    vec2 sky=(vUv-vec2(.83,.88))*vec2(aspect,1.);
+    float planet=length(sky)-.218;
+    float light=.38+.62*clamp(dot(normalize(sky+vec2(.0001)),normalize(vec2(-.85,-.7))),0.,1.);
+    col=mix(col,vec3(.008,.014,.061)+vec3(.025,.042,.13)*cloud(sky*25.),1.-smoothstep(-.002,.002,planet));
+    col+=light*vec3(.12,.4,1.)*(.41*exp(-abs(planet)*44.)+1.45*exp(-abs(planet)*420.));
+    vec2 tilted=turn(.36)*sky;
+    float orbit=length(vec2(tilted.x,tilted.y*3.9));
+    float visible=planet>0.||tilted.y<0.?1.:0.;
+    col+=visible*vec3(.19,.37,.88)*(.45*ridge(orbit-.30,.0019)+.76*ridge(orbit-.35,.0026)+.26*ridge(orbit-.366,.001));
+    float band=exp(-pow((vUv.y-.64+vUv.x*.31+.08*sin(8.*vUv.x+neb*2.))/.145,2.));
+    float gas=cloud(field*19.+vec2(t*.033,1.));
+    col+=band*pow(gas*1.38,3.)*mix(vec3(.035,.12,.36),vec3(.22,.048,.38),neb);
+    float floorY=.295+.024*sin(vUv.x*5.);
+    if(vUv.y<floorY){
+      float depth=floorY-vUv.y;
+      vec2 space=vec2((vUv.x-.50)*aspect/(depth+.016)*1.6,1./(depth+.016)*.78+t*.12);
+      space.y+=.19*sin(space.x*.65);
+      vec2 grid=abs(fract(space-.5)-.5)/max(fwidth(space),vec2(.001));
+      float wire=1.-smoothstep(.0,1.1,min(grid.x,grid.y));
+      col+=wire*smoothstep(.006,.11,depth)*mix(vec3(.035,.12,.66),vec3(.20,.07,.65),vUv.x)*.76;
+    }
+    col+=vec3(.045,.11,.38)*exp(-abs(vUv.y-floorY)*26.)*(.3+.7*neb);
+    col+=starfield(field+vec2(.0,-t*.0018),67.)*vec3(.58,.76,1.);
   }
   gl_FragColor=vec4(col,1.);
 }
@@ -126,14 +129,14 @@ void main(){vec2 p=(vUv-.5)*7.4;float r=length(p);
 `;
 export const blurFragment = `
 varying vec2 vUv;uniform sampler2D source;uniform vec2 stride;uniform float extract;
-vec3 tap(vec2 uv){vec3 c=texture2D(source,uv).rgb;return extract>.5?max(c-vec3(.32),vec3(0.)):c;}
+vec3 tap(vec2 uv){vec3 c=texture2D(source,uv).rgb;return extract>.5?max(c-vec3(.24),vec3(0.)):c;}
 void main(){vec3 c=tap(vUv)*.227027;
  c+=(tap(vUv+stride*1.384615)+tap(vUv-stride*1.384615))*.316216;
  c+=(tap(vUv+stride*3.230769)+tap(vUv-stride*3.230769))*.070270;
  gl_FragColor=vec4(c,1.);}
 `;
 export const finalFragment = `
-varying vec2 vUv;uniform sampler2D sceneTex,bloomTex;uniform float bloom,aspect;
+varying vec2 vUv;uniform sampler2D sceneTex,bloomTex,wideTex;uniform float bloom,aspect;
 uniform vec4 lenses[2];
 void main(){vec2 uv=vUv;
  for(int i=0;i<2;i++){
@@ -141,6 +144,6 @@ void main(){vec2 uv=vUv;
   float d=length(delta)/max(.0001,lenses[i].z);
   uv-=vec2(delta.x/aspect,delta.y)*exp(-d*d*1.45)*.21*lenses[i].w;
  }
- vec3 c=texture2D(sceneTex,uv).rgb+texture2D(bloomTex,uv).rgb*bloom;
- gl_FragColor=vec4(c/(1.+.18*c),1.);}
+ vec3 c=texture2D(sceneTex,uv).rgb+(texture2D(bloomTex,uv).rgb+texture2D(wideTex,uv).rgb*.92)*bloom;
+ gl_FragColor=vec4(c/(1.+.17*c),1.);}
 `;

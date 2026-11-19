@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Effects } from '../src/render/effects.js';
+import { Effects,PARTICLE_CAPACITY } from '../src/render/effects.js';
 import { World } from '../src/game/world.js';
 import { STEP } from '../src/game/rules.js';
 
@@ -10,7 +10,7 @@ test('particle reuse and delayed cascades survive repeated restarts',()=>{
     for(let i=0;i<20;i++)fx.event({type:'burst',kind:'well',x:2,y:2});
     for(let i=0;i<12;i++)fx.advance(STEP);
     fx.reset();
-    assert.equal(fx.pool,pool);assert.equal(pool.length,2600);
+    assert.equal(fx.pool,pool);assert.equal(pool.length,PARTICLE_CAPACITY);
     assert.equal(fx.pool.some(p=>p.life>0),false);
     assert.equal(fx.delayed.length+fx.flares.length+fx.rings.length,0);
   }
@@ -26,7 +26,7 @@ test('settings and records round-trip, recover from malformed saves and tolerate
   globalThis.matchMedia=()=>({matches:false});let saved=null;
   globalThis.localStorage={getItem:()=>saved,setItem:(_,s)=>{saved=s;}};
   const {readProfile,saveProfile}=await import('../src/platform/storage.js');
-  const p=readProfile();p.best=12345;p.settings.reduced=true;saveProfile(p);assert.deepEqual(readProfile(),p);
+  const p=readProfile();p.best=12345;p.scores=[12345];p.settings.reduced=true;saveProfile(p);assert.deepEqual(readProfile(),p);
   saved='{broken';assert.equal(readProfile().best,0);
   saved=JSON.stringify({settings:{volume:200,shake:'false'},best:-1});
   assert.equal(readProfile().settings.volume,100);assert.equal(readProfile().settings.shake,true);

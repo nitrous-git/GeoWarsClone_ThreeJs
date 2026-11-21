@@ -5,6 +5,7 @@ import { SpriteBatch } from './sprite-batch.js';
 import { Ink } from './ink.js';
 import { craft, fluxGlyph, glyph, fieldLights, orbitTrails } from './glyphs.js';
 import { Effects } from './effects.js';
+import { ArenaCamera } from './camera.js';
 import { quadVertex,screenVertex,backdropFragment,wellFragment,blurFragment,finalFragment } from './shaders.js';
 const uni=value=>({value});
 const additive=T.AdditiveBlending;
@@ -46,7 +47,7 @@ class GridView {
 }
 export class Display {
   constructor(canvas,world,settings,context){
-    this.canvas=canvas;this.settings=settings;
+    this.canvas=canvas;this.settings=settings;this.view=new ArenaCamera(settings);
     this.gl=new T.WebGLRenderer({canvas,context,antialias:false,alpha:false,powerPreference:'high-performance'});
     this.gl.autoClear=false;this.noise=makeNoise();this.plane=new T.PlaneGeometry(2,2);
     this.screenCam=new T.Camera();this.camera=new T.OrthographicCamera(-56,56,35,-35,.01,100);
@@ -79,23 +80,24 @@ export class Display {
     this.gl.setSize(w,h,false);this.target.setSize(w,h);
     this.bright.setSize(Math.max(1,w>>2),Math.max(1,h>>2));this.soft.setSize(this.bright.width,this.bright.height);
     this.wide.setSize(Math.max(1,w>>4),Math.max(1,h>>4));this.haze.setSize(this.wide.width,this.wide.height);
-    const hh=Math.max(34.5,54.5/this.aspect);this.hh=hh;this.hw=hh*this.aspect;
-    Object.assign(this.camera,{left:-this.hw,right:this.hw,top:hh,bottom:-hh});this.camera.updateProjectionMatrix();
+    this.view.resize(this.aspect);this.syncCamera();
     this.back.uniforms.aspect.value=this.final.uniforms.aspect.value=this.aspect;
   }
-  aim(clientX,clientY,p){
-    const r=this.canvas.getBoundingClientRect();
-    const x=((clientX-r.left)/r.width*2-1)*this.hw+this.camera.position.x;
-    const y=(1-(clientY-r.top)/r.height*2)*this.hh+this.camera.position.y;
-    return Math.atan2(y-p.y,x-p.x);
+  syncCamera(){
+    const {hw,hh,sx,sy}=this.view;
+    if(this.hw!==hw||this.hh!==hh){
+      this.hw=hw;this.hh=hh;
+      Object.assign(this.camera,{left:-hw,right:hw,top:hh,bottom:-hh});this.camera.updateProjectionMatrix();
+    }
+    this.camera.position.x=sx;this.camera.position.y=sy;
   }
+  resetCamera(player){this.view.reset(player);this.syncCamera();}
+  aim(clientX,clientY,p){return this.view.aim(clientX,clientY,this.canvas.getBoundingClientRect(),p);}
   pass(mat,target){
     this.quad.material=mat;this.gl.setRenderTarget(target);this.gl.render(this.screenScene,this.screenCam);
   }
   paintWorld(w,t){
     this.grid.sync(w.grid);this.light.begin();fieldLights(this.light,w,t,this.settings);this.light.end();this.ink.begin();this.fx.begin();
-    const j=this.settings.shake&&!this.settings.reduced?this.effects.shake*.45:0;
-    this.camera.position.x=j*Math.sin(t*78);this.camera.position.y=j*Math.cos(t*94);
     let holes=0;
     for(const e of w.enemies){
       glyph(this.ink,e,t);
@@ -114,13 +116,13 @@ export class Display {
     this.effects.draw(this.fx,this.settings.reduced);this.ink.end();this.fx.end();
     this.gl.render(this.scene,this.camera);
   }
-  render(world,isMenu,time) {
+  render(world,isMenu,time,dt=1/60) {
     const bg=this.back.uniforms;bg.menu.value=isMenu?1:0;bg.time.value=time;bg.reduced.value=+this.settings.reduced;
     const compact=innerWidth<=680;
     bg.center.value.set(compact?.69:.727,compact?.692:.526);
     bg.radius.value=compact?Math.min(.115,this.aspect*.19):Math.min(.163,this.aspect*.125);
     this.pass(this.back,this.target);
-    if(!isMenu)this.paintWorld(world,time);
+    if(!isMenu){this.view.update(world.player,dt,this.effects.shake,time);this.syncCamera();this.paintWorld(world,time);}
     else for(const v of this.lenses)v.w=0;
     const b=this.blur.uniforms;
     if(this.settings.bloom){

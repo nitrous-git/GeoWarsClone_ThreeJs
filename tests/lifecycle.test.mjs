@@ -26,10 +26,10 @@ test('settings and records round-trip, recover from malformed saves and tolerate
   globalThis.matchMedia=()=>({matches:false});let saved=null;
   globalThis.localStorage={getItem:()=>saved,setItem:(_,s)=>{saved=s;}};
   const {readProfile,saveProfile}=await import('../src/platform/storage.js');
-  const p=readProfile();p.best=12345;p.scores=[12345];p.settings.reduced=true;saveProfile(p);assert.deepEqual(readProfile(),p);
+  const p=readProfile();p.best=12345;p.scores=[12345];p.settings.reduced=true;p.settings.camera='follow';saveProfile(p);assert.deepEqual(readProfile(),p);
   saved='{broken';assert.equal(readProfile().best,0);
-  saved=JSON.stringify({settings:{volume:200,shake:'false'},best:-1});
-  assert.equal(readProfile().settings.volume,100);assert.equal(readProfile().settings.shake,true);
+  saved=JSON.stringify({settings:{volume:200,shake:'false',camera:'invalid'},best:-1});
+  assert.equal(readProfile().settings.volume,100);assert.equal(readProfile().settings.shake,true);assert.equal(readProfile().settings.camera,'static');
   globalThis.localStorage={getItem(){throw Error();},setItem(){throw Error();}};
   assert.equal(readProfile().best,0);assert.doesNotThrow(()=>saveProfile(p));
 });

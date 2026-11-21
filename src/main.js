@@ -18,7 +18,7 @@ export async function start(){
   }
   function newRun(){
     if(contextLost)return;
-    audio.unlock();audio.chirp();world.reset();display.effects.reset();prior=profile.best;sceneTime=0;
+    audio.unlock();audio.chirp();world.reset();display.effects.reset();display.resetCamera(world.player);prior=profile.best;sceneTime=0;
     enter('play');ui.tick(world,0,true);
   }
   function pause(){if(state==='play'){enter('pause');ui.open('pause');}}
@@ -48,7 +48,8 @@ export async function start(){
     stick:(side,s)=>ui.stick(side,s),
     pulse:()=>{if(state==='play')input.pulse=true;},
     mute:()=>{settings.muted=!settings.muted;audio.unlock();audio.volume();ui.refreshProfile();saveProfile(profile);},
-    settings:key=>{if(key==='steering')ui.refreshProfile();if(key==='volume'){audio.unlock();audio.volume();}if(key==='quality')display.resize();saveProfile(profile);}
+    toggleCamera:()=>{settings.camera=settings.camera==='follow'?'static':'follow';display.resetCamera(world.player);saveProfile(profile);ui.message('Camera',settings.camera==='follow'?'Follow player':'Full arena',1.2);},
+    settings:key=>{if(key==='camera')display.resetCamera(world.player);if(key==='steering')ui.refreshProfile();if(key==='volume'){audio.unlock();audio.volume();}if(key==='quality')display.resize();saveProfile(profile);}
   };
   ui=new Interface(profile,actions);input=new Controls($('screen'),actions,settings);
   document.addEventListener('click',e=>{
@@ -90,7 +91,7 @@ export async function start(){
     const animated=state==='play'||state==='dying';
     const minFrame=state==='menu'&&!settings.reduced?1000/30:1000/15;
     if(animated||now-lastPaint>=minFrame){
-      display.render(world,state==='menu',sceneTime);lastPaint=now;
+      display.render(world,state==='menu',sceneTime,state==='pause'||state==='results'?0:(Number.isFinite(lastPaint)?Math.min(.1,(now-lastPaint)/1000):dt));lastPaint=now;
     }
   }
   const canvas=$('screen');

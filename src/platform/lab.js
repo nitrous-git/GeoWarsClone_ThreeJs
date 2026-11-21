@@ -22,7 +22,7 @@ export function installLab(world,display,applyEvents,ui,initial){
     scene=scenes.includes(name)?name:'combat';select.value=scene;
     world.reset(seed);world.director.sector=3;world.director.step=()=>{};
     world.player.grace=0;world.player.x=-11;world.player.y=-3;world.player.a=.9;
-    display.effects.reset();frame=0;
+    display.effects.reset();display.resetCamera(world.player);frame=0;
     const random=rng(seed);
     if(['combat','nova','overlap','mass','stress'].includes(scene)){
       const n=scene==='stress'?70:scene==='mass'?37:25;

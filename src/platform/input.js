@@ -12,6 +12,7 @@ export class Controls {
       this.keys.add(code);if(['KeyW','KeyA','KeyD','KeyS'].includes(code))this.device='Keyboard + mouse';
       if(e.repeat)return;
       if(code==='KeyP'&&actions.canTogglePause())actions.back();
+      if(code==='KeyC'&&actions.playing())actions.toggleCamera();
       if(code==='Space'&&actions.playing()){this.pulse=true;this.device='Keyboard + mouse';}
       if(code==='Enter'&&!e.target.closest('button'))actions.confirm();
     });

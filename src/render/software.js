@@ -3,6 +3,7 @@
 import { ARENA,TAU } from '../game/rules.js';
 import { atlas,sprites } from './sprites.js';
 import { Effects } from './effects.js';
+import { ArenaCamera } from './camera.js';
 import { glyph,craft,fluxGlyph,fieldLights,orbitTrails } from './glyphs.js';
 import { border } from './border.js';
 const colors=new Map(), lights=new Map();
@@ -36,20 +37,20 @@ function plate(name){
 }
 export class CanvasDisplay {
   constructor(canvas,world,settings){
-    this.canvas=canvas;this.settings=settings;this.c=canvas.getContext('2d',{alpha:false});
+    this.canvas=canvas;this.settings=settings;this.view=new ArenaCamera(settings);this.c=canvas.getContext('2d',{alpha:false});
     if(!this.c)throw new Error('Canvas unavailable');
     this.ink=new CanvasInk(this.c);this.effects=new Effects(settings);this.sheet=atlas();this.glowPlate=document.createElement('canvas');this.images={sky:plate('sky'),well:plate('well')};
-    this.sx=0;this.sy=0;this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(canvas);this.resize();
+    this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(canvas);this.resize();
   }
   resize(){
     const r=this.canvas.getBoundingClientRect();this.w=Math.max(1,r.width);this.h=Math.max(1,r.height);
     this.dpr=Math.min(devicePixelRatio||1,this.settings.quality==='high'?1.5:1);
     this.canvas.width=Math.max(1,Math.round(this.w*this.dpr));this.canvas.height=Math.max(1,Math.round(this.h*this.dpr));
     this.glowPlate.width=Math.max(1,this.canvas.width>>3);this.glowPlate.height=Math.max(1,this.canvas.height>>3);
-    this.scale=Math.min(this.h/69,this.w/109);
+    this.view.resize(this.w/this.h);
   }
-  aim(x,y,p){const r=this.canvas.getBoundingClientRect();
-    return Math.atan2((this.h*.5-(y-r.top))/this.scale+this.sy-p.y,((x-r.left)-this.w*.5)/this.scale+this.sx-p.x);}
+  resetCamera(player){this.view.reset(player);}
+  aim(x,y,p){return this.view.aim(x,y,this.canvas.getBoundingClientRect(),p);}
   grid(g){
     const {cols,rows,sx,sy}=g,{halfWidth:W,halfHeight:H}=ARENA,c=this.c;
     const point=(k,j,i,move)=>{
@@ -101,7 +102,7 @@ export class CanvasDisplay {
     }
     c.restore();
   }
-  render(w,menu,t){
+  render(w,menu,t,dt=1/60){
     const c=this.c,ink=this.ink,glow=this.settings.bloom&&!this.settings.reduced;
     c.setTransform(this.dpr,0,0,this.dpr,0,0);c.globalAlpha=1;c.globalCompositeOperation='source-over';c.fillStyle='#081015';c.fillRect(0,0,this.w,this.h);
     if(this.images.sky.naturalWidth){
@@ -109,9 +110,9 @@ export class CanvasDisplay {
       c.drawImage(img,(this.w-img.width*k)*.5,(this.h-img.height*k)*.5,img.width*k,img.height*k);
     }
     if(menu){this.menu(t);return;}
-    const j=this.settings.shake&&!this.settings.reduced?this.effects.shake*.45:0;
-    this.sx=j*Math.sin(t*78);this.sy=j*Math.cos(t*94);
-    c.save();c.translate(this.w/2,this.h/2);c.scale(this.scale,-this.scale);c.translate(-this.sx,-this.sy);
+    this.view.update(w.player,dt,this.effects.shake,t);
+    const {hh,sx,sy}=this.view,scale=this.h/(2*hh);
+    c.save();c.translate(this.w/2,this.h/2);c.scale(scale,-scale);c.translate(-sx,-sy);
     this.grid(w.grid);border(ink);
     c.globalCompositeOperation='lighter';fieldLights(ink,w,t,this.settings);c.globalCompositeOperation='source-over';
     for(const e of w.enemies){

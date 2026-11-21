@@ -60,7 +60,7 @@ export class Interface {
       const rows=this.profile.scores.map((score,i)=>'<li><span>'+String(i+1).padStart(2,'0')+'</span><b>'+digits(score)+'</b></li>').join('');
       this.shell(name,'Local records','High scores',rows?'<ol class="records">'+rows+'</ol>':'<p>Finish a scored run to set your first record.</p>');
     }else if(name==='manual'){
-      const controls='<div class="entry"><b>Steering</b><kbd>'+(s.steering==='thrust'?'A / D rotate · W thrust':'W A S D move')+'</kbd></div><div class="entry"><b>Aim & fire</b><kbd>Mouse + LMB / Arrow keys</kbd></div><div class="entry"><b>Nova pulse</b><kbd>Space / RMB</kbd></div><div class="entry"><b>Pause</b><kbd>Esc / P</kbd></div><p>Gamepad uses left stick to move, right stick to shoot, a bumper to pulse and Start to pause. On touchscreens, drag on each half of the arena and tap Nova pulse. Landscape gives the widest view.</p>';
+      const controls='<div class="entry"><b>Steering</b><kbd>'+(s.steering==='thrust'?'A / D rotate · W thrust':'W A S D move')+'</kbd></div><div class="entry"><b>Aim & fire</b><kbd>Mouse + LMB / Arrow keys</kbd></div><div class="entry"><b>Nova pulse</b><kbd>Space / RMB</kbd></div><div class="entry"><b>Switch camera</b><kbd>C</kbd></div><div class="entry"><b>Pause</b><kbd>Esc / P</kbd></div><p>Gamepad uses left stick to move, right stick to shoot, a bumper to pulse and Start to pause. On touchscreens, drag on each half of the arena and tap Nova pulse. Landscape gives the widest view.</p>';
       const threats=[
         ['⌁','#ffae45','Snake','Avoid every golden link. Aim at the violet head to break the chain.'],
         ['◇','#62d8ff','Hunter','Pursues in wings. Cut across its approach.'],
@@ -77,9 +77,10 @@ export class Interface {
         '<div class="row"><label for="opt-volume">Master volume <small id="volume-value">'+s.volume+'%</small></label><input id="opt-volume" type="range" min="0" max="100" value="'+s.volume+'"></div>'+
         '<div class="row"><label for="opt-quality">Graphics quality</label><select id="opt-quality"><option value="high">High</option><option value="standard">Standard</option></select></div>'+
         '<div class="row"><label for="opt-steering">Keyboard steering</label><select id="opt-steering"><option value="thrust">Rotate + thrust</option><option value="directional">Directional WASD</option></select></div>'+
+        '<div class="row"><label for="opt-camera">Camera mode</label><select id="opt-camera"><option value="static">Static / Full arena</option><option value="follow">Follow player</option></select></div>'+
         check('bloom','Bloom')+check('shake','Camera shake')+check('reduced','Reduced effects')+'<p>Reduced effects soften bursts, reduce particle density and disable camera shake.</p>');
-      $('opt-quality').value=s.quality;$('opt-steering').value=s.steering;
-      for(const key of ['volume','quality','steering','bloom','shake','reduced']){
+      $('opt-quality').value=s.quality;$('opt-steering').value=s.steering;$('opt-camera').value=s.camera;
+      for(const key of ['volume','quality','steering','camera','bloom','shake','reduced']){
         const el=$('opt-'+key);el.oninput=()=>{
           s[key]=el.type==='checkbox'?el.checked:key==='volume'?Number(el.value):el.value;
           $('volume-value').textContent=s.volume+'%';this.actions.settings(key);
@@ -87,8 +88,7 @@ export class Interface {
       }
     }else if(name==='pause'){
       this.shell(name,'Flight suspended','Paused','<button class="launch" id="resume">'+icon('play')+'Resume run</button><div class="secondary">'+button('p-settings','Settings')+button('p-manual','Field manual')+button('exit','End run')+'</div>',false);
-      $('resume').onclick=this.actions.resume;$('p-settings').onclick=()=>this.open('settings');
-      $('p-manual').onclick=()=>this.open('manual');$('exit').onclick=this.actions.end;
+      $('resume').onclick=this.actions.resume;$('p-settings').onclick=()=>this.open('settings');$('p-manual').onclick=()=>this.open('manual');$('exit').onclick=this.actions.end;
     }
   }
   results(w,prior){
